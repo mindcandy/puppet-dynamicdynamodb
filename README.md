@@ -3,7 +3,10 @@ Puppet module for Dynamic DynamoDB
 
 Puppet module for use with Sebastian Dahlgren's [Dynamic DynamoDB](https://github.com/sebdah/dynamic-dynamodb) which allows for automated scaling of read/write capacity units in AWS DynamoDB tables based on CloudWatch metrics. 
 
-Support Debian/Ubuntu only at present.
+
+PLATFORMS
+---------
+Supports Debian/Ubuntu only at present.
 
 REQUIREMENTS
 ------------
