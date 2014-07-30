@@ -36,7 +36,7 @@ class dynamicdynamodb::params {
                                 allow_scaling_down_writes_on_0_percent => 'true',
                                 always_decrease_rw_together => 'true',
                                 maintenance_windows => 'UNSET',
-                                sns_topic_arn => false,
+                                sns_topic_arn => 'UNSET',
                                 sns_message_types => 'UNSET'
                               } 
   # Valid values for sns_message_types are "scale-up, scale-down, high-throughput-alarm, low-throughput-alarm"
