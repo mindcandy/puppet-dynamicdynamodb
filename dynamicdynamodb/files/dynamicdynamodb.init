@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+### BEGIN INIT INFO
+# Provides:        dynamic-dynamodb
+# Required-Start:  $remote_fs $syslog
+# Required-Stop:   $remote_fs $syslog
+# Default-Start:   2 3 4 5
+# Default-Stop:    0 1 6
+# Short-Description: Automatic scaling for AWS DynamoDB
+# Description:     Dynamic DynamoDB provides automatic scaling for AWS DynamoDB
+### END INIT INFO
+NAME=dynamicdynamodb
+DAEMON=/usr/local/bin/dynamic-dynamodb
+DRY_RUN=$2
+DAEMON_START_ARGS="--config /etc/dynamic-dynamodb/dynamic-dynamodb.conf --daemon start"
+DAEMON_STOP_ARGS="--config /etc/dynamic-dynamodb/dynamic-dynamodb.conf --daemon stop"
+SCRIPTNAME=/etc/init.d/$NAME
+SERVICE_LOG_FILE=/etc/dynamic-dynamodb/logs/service.log
+
+if [ "$DRY_RUN" == "--dry-run" ]; then
+   DAEMON_START_ARGS="--config /etc/dynamic-dynamodb/dynamic-dynamodb.conf --dry-run --daemon start"
+   DAEMON_STOP_ARGS="--config /etc/dynamic-dynamodb/dynamic-dynamodb.conf --dry-run --daemon stop"
+elif [ "$2" != "" ]; then
+   echo "$2"
+   echo "Second parameter has to be --dry-run and is used only when running start/restart/force-reload commands"
+   exit 1
+fi
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 1
+
+. /lib/lsb/init-functions
+
+log(){
+    timenow=`date +%Y-%m-%dT%H:%M:%S.%N`
+    echo "$timenow: $1"
+    echo "$timenow: $1" >> $SERVICE_LOG_FILE
+}
+
+error_exit(){
+  log "$1"
+  exit 1
+}
+
+
+do_start()
+{
+   if [ "$DRY_RUN" == "--dry-run" ]; then
+      log "do_start:Dry run mode, not uploading latest config file to S3"
+   fi
+   log "do_start:Starting $NAME"
+   $DAEMON $DAEMON_START_ARGS  || error_exit "Failed in starting $NAME service"
+}
+
+do_stop()
+{
+   log "do_stop:Stopping $NAME"
+   $DAEMON $DAEMON_STOP_ARGS || error_exit "Failed in stopping $NAME service"
+}
+
+
+case "$1" in
+  start)
+  do_start
+  ;;
+  stop)
+  do_stop
+  ;;
+  restart|force-reload)
+  do_stop
+  do_start
+    #*)
+  ;;
+  *)
+  echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+  exit 3
+  ;;
+esac

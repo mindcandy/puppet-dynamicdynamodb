@@ -1,0 +1,33 @@
+[global]
+<%- if @aws_access_key_id != 'UNSET' and if @aws_secret_access_key_id != 'UNSET' -%>
+aws-access-key-id        : <%= @aws_access_key_id %>
+aws-secret-access-key-id : <%= @aws_secret_access_key_id %>
+<%- end -%>
+<%- else -%>
+# AWS Credentials not set, assuming other location or instance profile roles
+<%- end -%>
+region                   : <%= @aws_region %>
+check-interval           : <%= @aws_check_interval %>
+
+<%- if @circuit_breaker_enabled -%>
+circuit-breaker-url: <%= @circuit_breaker_url -%>
+circuit-breaker-timeout: <%= @circuit_breaker_timeout -%>
+<%- end -%>
+
+[logging]
+log-config-file = <%= @log_config_file %>
+
+<%- if @tables -%>
+  <%- @tables.each do | table | -%>
+    <%- table.keys.each do | key | -%>
+[table: <%= key %>]
+      <%- @defaults.each do | d_key, d_value | -%>
+        <%- if table[key].has_key?(d_key) -%>
+<%= "#{d_key.gsub('_', '-')}" %> : <%= table[key][d_key] %>
+        <%- elsif d_value != 'UNSET' -%>
+<%= "#{d_key.gsub('_', '-')}" %> : <%= d_value %>
+        <%- end -%>
+      <%- end %>
+    <%- end -%>
+  <%- end -%>
+<%- end %>

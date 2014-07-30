@@ -1,7 +1,13 @@
 Puppet module for Dynamic DynamoDB
 ==================================
 
-Puppet module for use with Sebastian Dahlgren's [Dynamic DynamoDB](https://github.com/sebdah/dynamic-dynamodb) which allows for automated scaling of read/write capacity units in AWS DynamoDB tables based on CloudWatch metrics.
+Puppet module for use with Sebastian Dahlgren's [Dynamic DynamoDB](https://github.com/sebdah/dynamic-dynamodb) which allows for automated scaling of read/write capacity units in AWS DynamoDB tables based on CloudWatch metrics. 
+
+Support Debian/Ubuntu only at present.
+
+REQUIREMENTS
+------------
+You need to ensure the python-pip package is installed as the module will install Dynamic DynamoDB using the Puppet pip provider.
 
 USAGE
 -----
@@ -17,14 +23,16 @@ At it's most minimal, and assuming you are using Instance-Profile roles to get A
                   ]
     }
 
-The "tables" variable in the module takes an array of hash arrays, where the key for the has array is either the name of a specifc table or alternatively a regex if you want to configure multiple tables at once (see the Dynamic DynamoDB docs [here](http://dynamic-dynamodb.readthedocs.org/en/latest/configuration_options.html#global-configuration) for more details).
+The "tables" variable in the module takes an array of hashes that contain a hash of the required config. The key for the hash is either the name of a specific table or alternatively a regex if you want to configure multiple tables at once (see the Dynamic DynamoDB docs [here](http://dynamic-dynamodb.readthedocs.org/en/latest/configuration_options.html#global-configuration) for more details).
 
 If you choose to use individual hash arrays for each table then the module will iterate these when creating the configuration file from the erb template. The resulting config file will be put in "/etc/dynamicdynamodb/dynamic-dynamoddb.conf".
+
+For more info about the config file and its options see [here](http://dynamic-dynamodb.readthedocs.org/en/latest/example_configuration.html)
 
 DEFAULTS
 --------
 
-All the defaults for the module can be found in params.pp and are as follows:
+All the defaults for the module can be found in params.pp and are as follows. 
 
     $aws_access_key_id        = 'UNSET'
     $aws_secret_access_key_id = 'UNSET'
@@ -33,10 +41,9 @@ All the defaults for the module can be found in params.pp and are as follows:
     $circuit_breaker_enabled  = false
     $circuit_breaker_url      = 'UNSET'
     $circuit_breaker_timeout  = 500
-    $log_config_file          = '/etc/dynamicdynamodb/logging.conf'
+    $log_config_file          = '/etc/dynamic-dynamodb/logging.conf'
     $tables                   = false
-    $dynamic_defaults         = { table => '*', 
-                                  enable_reads_autoscaling => 'false',
+    $defaults                 = { enable_reads_autoscaling => 'false',
                                   reads_upper_alarm_threshold => 0,
                                   reads_lower_alarm_threshold => 0,
                                   reads_upper_threshold  => 90,
@@ -63,7 +70,9 @@ All the defaults for the module can be found in params.pp and are as follows:
                                   allow_scaling_down_writes_on_0_percent => 'true',
                                   always_decrease_rw_together => 'true',
                                   maintenance_windows => 'UNSET',
-                                  sns_topic_arn => 'UNSET',
-                                  sns_message_types => 'scale-up, scale-down, high-throughput-alarm, low-throughput-alarm'
-                                }
+                                  sns_topic_arn => false,
+                                  sns_message_types => 'UNSET'
+                                } 
+
+__NOTE__: sns_message_types is a coma separated string that can contain any or all of the following: "scale-up, scale-down, high-throughput-alarm, low-throughput-alarm"
 
